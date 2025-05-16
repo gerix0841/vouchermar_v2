@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 
 import java.time.Instant;
-import java.time.LocalDate;
 
 @Entity
 public class Voucher {

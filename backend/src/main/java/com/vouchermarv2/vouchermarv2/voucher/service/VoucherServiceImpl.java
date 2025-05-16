@@ -21,13 +21,17 @@ public class VoucherServiceImpl implements VoucherService{
     @Override
     public List<Voucher> getVouchers() {
         List<Voucher> vouchers = new ArrayList<Voucher>();
-        voucherRepository.findAll().forEach(voucher -> vouchers.add(voucher));
+        voucherRepository.findAll().forEach(voucher -> {
+            updateActiveStatus(voucher);
+            vouchers.add(voucher);
+        });
         return vouchers;
     }
 
     @Override
     public Voucher getVoucherById(int id) {
         Optional<Voucher> voucher = voucherRepository.findById(id);
+        voucher.ifPresent(this::updateActiveStatus);
         return voucher.orElse(null);
     }
 
@@ -36,6 +40,7 @@ public class VoucherServiceImpl implements VoucherService{
         if (voucher.getId() != null) {
             throw new IllegalArgumentException("New voucher cannot already have an ID");
         }
+        updateActiveStatus(voucher);
         return voucherRepository.save(voucher);
     }
 
@@ -51,10 +56,11 @@ public class VoucherServiceImpl implements VoucherService{
 
         if(voucherById.isPresent()){
             Voucher updatedVoucher = voucherById.get();
-            updatedVoucher.setId(voucher.getId());
             updatedVoucher.setCode(voucher.getCode());
             updatedVoucher.setExpiryDate(voucher.getExpiryDate());
             updatedVoucher.setMaxRedemptions(voucher.getMaxRedemptions());
+
+            updateActiveStatus(updatedVoucher);
 
             return voucherRepository.save(updatedVoucher);
         }
@@ -78,6 +84,25 @@ public class VoucherServiceImpl implements VoucherService{
         }
 
         voucher.setCurrentRedemptions(voucher.getCurrentRedemptions()+1);
+        updateActiveStatus(voucher);
         return voucherRepository.save(voucher);
+    }
+
+    @Override
+    public boolean codeExists(String code) {
+        return voucherRepository.existsByCode(code);
+    }
+
+    @Override
+    public void updateActiveStatus(Voucher voucher) {
+        if(voucher.getExpiryDate() != null && voucher.getExpiryDate().isBefore(Instant.now())){
+            voucher.setActive(false);
+            return;
+        }
+        if(voucher.getCurrentRedemptions() >= voucher.getMaxRedemptions()){
+            voucher.setActive(false);
+            return;
+        }
+        voucher.setActive(true);
     }
 }

@@ -5,12 +5,13 @@ import com.vouchermarv2.vouchermarv2.voucher.service.VoucherService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
+@CrossOrigin("*")
+@RequestMapping("/api")
 @RestController
 public class VoucherController {
 
@@ -50,5 +51,10 @@ public class VoucherController {
     public ResponseEntity<Voucher> redeemVoucher(@RequestParam String code){
         Voucher redeemedVoucher = voucherService.redeemVoucher(code);
         return new ResponseEntity<>(redeemedVoucher,HttpStatus.OK);
+    }
+
+    @GetMapping("/vouchers/checkCodeExists")
+    public boolean checkCodeExists(@RequestParam String code){
+        return voucherService.codeExists(code);
     }
 }

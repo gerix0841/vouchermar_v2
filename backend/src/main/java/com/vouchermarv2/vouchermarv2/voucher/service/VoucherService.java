@@ -12,4 +12,6 @@ public interface VoucherService {
     String deleteVoucher(int id);
     Voucher updateVoucher(int id, Voucher voucher);
     Voucher redeemVoucher(String code);
+    boolean codeExists(String code);
+    void updateActiveStatus(Voucher voucher);
 }
